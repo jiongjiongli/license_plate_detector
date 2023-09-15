@@ -8,7 +8,7 @@ class DataAnalyzer:
     def __init__(self):
         self.data_root_path = Path(r'/home/data')
 
-    def parse():
+    def parse(self):
         anno_file_paths = list(self.data_root_path.rglob('*.xml'))
 
         print('=' * 80)
