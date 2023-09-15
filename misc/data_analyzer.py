@@ -24,9 +24,10 @@ class DataAnalyzer:
 
             xml_tree = ET.parse(anno_file_path.as_posix())
 
+            root = xml_tree.getroot()
+
             print(ET.tostring(xml_tree))
 
-            # root = xml_tree.getroot()
             # filename = root.find('filename').text
 
             # size = root.find('size')
