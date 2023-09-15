@@ -26,7 +26,7 @@ class DataAnalyzer:
 
             root = xml_tree.getroot()
 
-            print(ET.tostring(xml_tree))
+            print(ET.tostring(root))
 
             # filename = root.find('filename').text
 
