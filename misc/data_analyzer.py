@@ -24,7 +24,7 @@ class DataAnalyzer:
 
             xml_tree = ET.parse(anno_file_path.as_posix())
 
-            print(etree.tostring(x, pretty_print=True))
+            print(ET.tostring(xml_tree, pretty_print=True))
 
             # root = xml_tree.getroot()
             # filename = root.find('filename').text
