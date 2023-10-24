@@ -1,11 +1,21 @@
 import json
 from pathlib import Path
 import random
+import re
 from xml.etree import ElementTree as ET
 import cv2
 import html
 import pandas as pd
 import logging
+
+
+def set_logging(log_file_path):
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s',
+        handlers=[
+            # logging.FileHandler(log_file_path, mode='a'),
+            logging.StreamHandler()])
 
 
 class DataAnalyzer:
@@ -17,7 +27,7 @@ class DataAnalyzer:
         parse_results = []
 
         for anno_file_path in anno_file_paths:
-            # print(anno_file_path.as_posix())
+            # logging.info(anno_file_path.as_posix())
 
             xml_tree = ET.parse(anno_file_path.as_posix())
 
@@ -27,6 +37,30 @@ class DataAnalyzer:
 
             filename = root.find('filename').text
             image_file_path = anno_file_path.parent / filename
+
+            if not re.match(r'^[a-zA-Z0-9_./]+$',
+                            image_file_path.name):
+                message = r'Error: {} image path {} invalid!'.format(
+                    anno_file_path,
+                    image_file_path)
+                logging.error(message)
+
+            name_parts = image_file_path.name.split('.')
+            if len(name_parts) - 1 != 1:
+                message = r'Error: {} number of dot in image path {} {} != {}'.format(
+                    anno_file_path,
+                    image_file_path,
+                    len(name_parts) - 1,
+                    1)
+                logging.error(message)
+
+            if not re.match(r'^[a-zA-Z0-9_]+.[a-zA-Z]+$', image_file_path.name):
+                message = r'Error: {} name of image path {} is invalid! {}'.format(
+                    anno_file_path,
+                    image_file_path,
+                    image_file_path.name)
+                logging.error(message)
+
             if not image_file_path.exists():
                 message = r'Error: {} image {} not exist!'.format(
                 anno_file_path,
@@ -172,8 +206,11 @@ class DataAnalyzer:
 
     def verify_node(self, node, child_info_dict, anno_file_path):
         for child in node.findall('*'):
-            message = r'Error: {} tag {} not in: {}'.format(
-                anno_file_path, child.tag, child_info_dict)
+            message = r'Error: {} tag {} not in: {} node: {}'.format(
+                anno_file_path,
+                child.tag,
+                child_info_dict,
+                ET.tostring(node, encoding='unicode'))
             if not (child.tag in child_info_dict):
                 logging.error(message)
 
@@ -247,7 +284,7 @@ class DataAnalyzer:
                     attribute_dict)
                 logging.error(message)
 
-        if 'ocr' in attribute_dict:
+        if 'ocr' in attribute_dict and (attribute_dict['ocr'] is not None):
             try:
                 attribute_dict['ocr'] = html.unescape(attribute_dict['ocr'])
             except:
@@ -284,7 +321,8 @@ class DataAnalyzer:
         return points
 
     def analyze(self, parse_results):
-        print('Data files count:', len(parse_results))
+        self.print_numbers('num_gt_files', len(parse_results))
+        image_file_paths = []
         num_image_file_dict = {}
         img_size_dict = {}
         num_gt_dict = {}
@@ -293,10 +331,14 @@ class DataAnalyzer:
         num_ocr_text_len_dict = {}
         num_ocr_text_color_dict = {}
         num_points_dict = {}
+        ocr_char_dict = {}
+        ocr_class_names_dict = {}
+        num_ocr_gt_dict = {}
 
         for parse_result in parse_results:
             anno_file_path = Path(parse_result['anno_file_path'])
             image_file_path = Path(parse_result['image_file_path'])
+            image_file_paths.append(image_file_path.as_posix())
             num_image_file_dict.setdefault(image_file_path.suffix, 0)
             num_image_file_dict[image_file_path.suffix] += 1
 
@@ -309,6 +351,8 @@ class DataAnalyzer:
             num_gt = len(obj_list)
             num_gt_dict.setdefault(num_gt, 0)
             num_gt_dict[num_gt] += 1
+
+            num_ocr_gt = 0
 
             for obj in obj_list:
                 class_name = obj['name']
@@ -351,6 +395,14 @@ class DataAnalyzer:
                     num_ocr_text_len_dict.setdefault(ocr_text_len, 0)
                     num_ocr_text_len_dict[ocr_text_len] += 1
 
+                    for gt_ocr_char in gt_ocr_text:
+                        ocr_char_dict.setdefault(gt_ocr_char, 0)
+                        ocr_char_dict[gt_ocr_char] += 1
+
+                    ocr_class_names_dict.setdefault(class_name, 0)
+                    ocr_class_names_dict[class_name] += 1
+                    num_ocr_gt += 1
+
                     color = attribute_dict['color']
                     num_ocr_text_color_dict.setdefault(color, 0)
                     num_ocr_text_color_dict[color] += 1
@@ -359,6 +411,10 @@ class DataAnalyzer:
                     num_points_dict.setdefault(num_points, 0)
                     num_points_dict[num_points] += 1
 
+            num_ocr_gt_dict.setdefault(num_ocr_gt, 0)
+            num_ocr_gt_dict[num_ocr_gt] += 1
+
+        # self.print_numbers('image_file_paths', image_file_paths)
         self.print_numbers('num_image_file_dict', num_image_file_dict)
         self.print_numbers('img_size_dict', img_size_dict)
         self.print_numbers('num_gt_dict', num_gt_dict)
@@ -367,24 +423,30 @@ class DataAnalyzer:
         self.print_numbers('num_ocr_text_len_dict', num_ocr_text_len_dict)
         self.print_numbers('num_ocr_text_color_dict', num_ocr_text_color_dict)
         self.print_numbers('num_points_dict', num_points_dict)
+        self.print_numbers('ocr_char_dict', ocr_char_dict)
+        self.print_numbers('ocr_class_names_dict', ocr_class_names_dict)
 
     def print_numbers(self, comment, numbers):
-        print('#' * 80)
-        print(comment)
-        print('-' * 80)
-        print(numbers)
-        print('#' * 80)
+        logging.info('#' * 80)
+        logging.info(comment)
+        logging.info('-' * 80)
+        logging.info(numbers)
+        logging.info('#' * 80)
 
 def main():
-    print()
-    print('=' * 80)
+    log_file_path = r'/project/train/log/log.txt'
+    set_logging(log_file_path)
+
+    logging.info('')
+    logging.info('=' * 80)
     data_root_path = r'/home/data'
+    data_root_path = r'D:\proj\git\license_plate_detector\data'
     data_analyzer = DataAnalyzer(data_root_path)
     parse_results = data_analyzer.parse()
 
     data_analyzer.analyze(parse_results)
-    print('=' * 80)
-    print()
+    logging.info('=' * 80)
+    logging.info('')
 
 
 if __name__ == '__main__':
