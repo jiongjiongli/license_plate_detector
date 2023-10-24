@@ -13,6 +13,10 @@ wget -P /project/train/src_repo/ https://extremevision-js-userfile.oss-cn-hangzh
 rm -rf /project/train/src_repo/yolov8s.pt
 wget -P /project/train/src_repo/ https://extremevision-js-userfile.oss-cn-hangzhou.aliyuncs.com/user-36511-files/9748d0fe-df61-4289-8a03-5573d2ceaf3a/yolov8s.pt
 
+# Download from https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt
+rm -rf /project/train/src_repo/yolov8s-seg.pt
+wget -P /project/train/src_repo/ https://extremevision-js-userfile.oss-cn-hangzhou.aliyuncs.com/user-36511-files/83ee3420-1d14-48b7-8a80-21a21f0520d2/yolov8s-seg.pt
+
 # Download from https://ultralytics.com/assets/Arial.ttf
 rm -rf /project/train/src_repo/Arial.ttf
 wget -P /project/train/src_repo/ https://extremevision-js-userfile.oss-cn-hangzhou.aliyuncs.com/user-36511-files/b37ad34b-5c66-4ede-b2f3-1dbbc7628c33/Arial.ttf
@@ -23,6 +27,7 @@ git clone -b py37 https://gitee.com/jiongjiongli/yolov8.git ultralytics
 
 cp /project/train/src_repo/yolov8n.pt /project/train/src_repo/ultralytics/
 cp /project/train/src_repo/yolov8s.pt /project/train/src_repo/ultralytics/
+cp /project/train/src_repo/yolov8s-seg.pt /project/train/src_repo/ultralytics/
 
 cd /project/train/src_repo
 rm -rf /project/train/src_repo/license_plate_detector
