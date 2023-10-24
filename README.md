@@ -3,8 +3,7 @@
 ```bash
 !rm /project/train/src_repo/deploy.sh
 
-!wget -P /project/train/src_repo/ https://gitee.com/jiongjiongli/license_plate_detector/raw/main/vehicle_det/deploy.sh
-
+!wget -P /project/train/src_repo/ https://gitee.com/jiongjiongli/license_plate_detector/raw/main/license_plate_det/deploy.sh
 !bash /project/train/src_repo/deploy.sh
 ```
 

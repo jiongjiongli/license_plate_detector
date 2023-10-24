@@ -16,19 +16,19 @@ mkdir -p /project/train/result-graphs
 # python misc/data_analyzer.py
 
 echo 'Start data_config...'
-python licence_plate_det/data_config.py
+python license_plate_det/data_config.py
 
 # echo 'Start yolo_tune...'
-# python licence_plate_det/yolo_tune.py
+# python license_plate_det/yolo_tune.py
 
 echo 'Start yolo_train...'
-python licence_plate_det/yolo_train.py
+python license_plate_det/yolo_train.py
 
 # echo 'Start yolo_val...'
-# python licence_plate_det/yolo_val.py
+# python license_plate_det/yolo_val.py
 
 echo 'Start yolo_export...'
-python licence_plate_det/yolo_export.py
+python license_plate_det/yolo_export.py
 
 echo 'Completed!'
 
